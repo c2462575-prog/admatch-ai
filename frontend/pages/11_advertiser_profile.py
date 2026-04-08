@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get, put
+from frontend.utils.profile_completeness import advertiser_completeness, show_completeness_bar
 
 require_login()
 user = current_user()
@@ -15,6 +16,10 @@ try:
     existing = get("/advertisers/profile")
 except Exception:
     pass
+
+if existing:
+    score, missing = advertiser_completeness(existing)
+    show_completeness_bar(score, missing, "advertiser")
 
 INDUSTRIES = ["food_beverage", "technology", "beauty", "fashion", "health", "education", "finance", "travel", "entertainment", "other"]
 BUDGET_RANGES = ["low", "medium", "medium_high", "high"]

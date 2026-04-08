@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get, put
+from frontend.utils.profile_completeness import creator_completeness, show_completeness_bar
 
 require_login()
 user = current_user()
@@ -14,6 +15,10 @@ try:
     existing = get("/creators/profile")
 except Exception:
     pass
+
+if existing:
+    score, missing = creator_completeness(existing)
+    show_completeness_bar(score, missing, "creator")
 
 NICHES = ["lifestyle", "technology", "beauty", "sustainability", "food", "travel", "fitness", "education", "gaming", "finance", "entertainment"]
 CONTENT_STYLES = ["lifestyle", "coffee", "urban_exploration", "sustainability", "organic", "zero_waste",
