@@ -27,7 +27,21 @@ if match_id and not neg_id:
         st.stop()
 
 if not neg_id:
-    st.info("請先從匹配結果頁面選擇一個配對來開始談判。")
+    # Show list of existing negotiations to pick from
+    try:
+        negotiations = get("/negotiations/")
+        if negotiations:
+            st.markdown("### 選擇一個談判繼續")
+            for neg_item in negotiations:
+                status_map = {"in_progress": "🔄", "success": "✅", "failed": "❌", "audience_rejected": "🚫"}
+                label = f"{status_map.get(neg_item['status'], '?')} {neg_item.get('advertiser_name', 'Advertiser')} ↔ {neg_item.get('creator_name', 'Creator')} ({neg_item['status']})"
+                if st.button(label, key=f"pick_{neg_item['id']}", use_container_width=True):
+                    st.session_state["active_negotiation_id"] = neg_item["id"]
+                    st.rerun()
+            st.divider()
+    except Exception:
+        pass
+    st.info("或從匹配結果頁面選擇一個配對來開始新談判。")
     if st.button("前往匹配結果"):
         st.switch_page("pages/30_matches.py")
     st.stop()
