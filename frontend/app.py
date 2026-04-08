@@ -27,6 +27,7 @@ history = st.Page("pages/32_history.py", title="History", icon="📋")
 pricing_page = st.Page("pages/40_pricing.py", title="Pricing Calculator", icon="💰")
 plans_page = st.Page("pages/41_plans.py", title="Plans", icon="💎")
 admin_page = st.Page("pages/50_admin.py", title="Admin", icon="📈")
+terms_page = st.Page("pages/60_terms.py", title="Terms & Privacy", icon="📜")
 
 user = st.session_state.get("user")
 
@@ -35,20 +36,20 @@ if user and user.get("role") == "advertiser":
         "": [home],
         "Dashboard": [adv_dashboard, adv_profile],
         "Matching": [matches, negotiation, history],
-        "Tools": [pricing_page, plans_page, admin_page],
+        "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
 elif user and user.get("role") == "creator":
     pages = {
         "": [home],
         "Dashboard": [creator_dashboard, creator_profile],
         "Matching": [matches, negotiation, history],
-        "Tools": [pricing_page, plans_page, admin_page],
+        "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
 else:
     pages = {
         "": [home],
         "Account": [login_page, register_page],
-        "Tools": [pricing_page, plans_page, admin_page],
+        "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
 
 pg = st.navigation(pages)

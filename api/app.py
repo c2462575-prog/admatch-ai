@@ -1,8 +1,10 @@
 """FastAPI application factory."""
 import time
 import logging
+from collections import defaultdict
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from core.config import ALLOWED_ORIGINS, DATABASE_PATH, GEMINI_API_KEY
 from core.database import init_db
 from api.routes import auth, advertisers, creators, matching, negotiations, pricing, stats, referrals
@@ -32,13 +34,29 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Simple in-memory rate limiter: 60 requests per minute per IP
+    _rate_store: dict[str, list[float]] = defaultdict(list)
+    RATE_LIMIT = 60
+    RATE_WINDOW = 60  # seconds
+
     @app.middleware("http")
-    async def log_requests(request: Request, call_next):
+    async def rate_limit_and_log(request: Request, call_next):
         start = time.time()
+        client_ip = request.client.host if request.client else "unknown"
+
+        # Rate limiting (skip health checks)
+        if not request.url.path.startswith("/api/health"):
+            now = time.time()
+            # Clean old entries
+            _rate_store[client_ip] = [t for t in _rate_store[client_ip] if now - t < RATE_WINDOW]
+            if len(_rate_store[client_ip]) >= RATE_LIMIT:
+                return JSONResponse(status_code=429, content={"detail": "Too many requests. Please try again later."})
+            _rate_store[client_ip].append(now)
+
         response = await call_next(request)
         duration = round((time.time() - start) * 1000)
         if not request.url.path.startswith("/api/health"):
-            logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration}ms)")
+            logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration}ms) [{client_ip}]")
         return response
 
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
