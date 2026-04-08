@@ -74,7 +74,30 @@ if submitted:
             "audience_sensitivity_factors": sensitivity,
             "audience_rejection_triggers": triggers,
         })
-        st.success("頻道資料已儲存！")
+        st.success("頻道資料已儲存！AI 正在背景分析你的頻道...")
         st.balloons()
     except Exception as e:
         st.error(f"儲存失敗：{e}")
+
+# Show AI analysis status
+try:
+    ai = get("/creators/ai-status")
+    if ai.get("analyzed") or ai.get("has_embedding"):
+        st.divider()
+        st.markdown("### 🤖 AI 分析狀態")
+        c1, c2 = st.columns(2)
+        with c1:
+            if ai.get("analyzed"):
+                st.success("✅ AI Profile 分析完成")
+            else:
+                st.info("⏳ AI Profile 分析中（或尚未啟動）")
+        with c2:
+            if ai.get("has_embedding"):
+                st.success("✅ Embedding 向量已生成")
+            else:
+                st.info("⏳ Embedding 生成中（或尚未啟動）")
+        if ai.get("embedding_description"):
+            with st.expander("AI 生成的頻道描述向量"):
+                st.caption(ai["embedding_description"])
+except Exception:
+    pass
