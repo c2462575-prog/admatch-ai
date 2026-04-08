@@ -92,15 +92,43 @@ def run_matching_for_user(conn, user_id: str, role: str) -> list[dict]:
 
 
 def _compute_partial_scores(engine, adv_dict, creator_dict, audience_dict) -> dict:
-    """Compute non-embedding scores when vectors are not available."""
+    """Compute scores when embedding vectors are not available.
+    Uses keyword overlap as embedding_score fallback instead of 0."""
     audience_score = engine.calculate_audience_fit(adv_dict, creator_dict)
     budget_score = engine.calculate_budget_fit(adv_dict, creator_dict)
     values_score = engine.calculate_values_alignment(adv_dict, creator_dict)
-    weighted = 0.25 * audience_score + 0.20 * budget_score + 0.15 * values_score
+    embedding_score = _keyword_similarity(adv_dict, creator_dict)
+    weighted = (0.40 * embedding_score + 0.25 * audience_score
+                + 0.20 * budget_score + 0.15 * values_score)
     return {
-        "embedding_score": 0.0,
+        "embedding_score": round(embedding_score, 4),
         "audience_score": audience_score,
         "budget_score": budget_score,
         "values_score": values_score,
         "weighted_score": round(weighted, 4),
     }
+
+
+def _keyword_similarity(adv_dict: dict, creator_dict: dict) -> float:
+    """Fallback embedding score using keyword overlap from descriptions and tags."""
+    adv_words = set()
+    for field in ("description", "industry", "target_audience", "campaign_goal"):
+        text = str(adv_dict.get(field, "")).lower()
+        adv_words.update(w for w in text.split() if len(w) > 2)
+    for v in adv_dict.get("values", []):
+        adv_words.add(v.lower())
+
+    creator_words = set()
+    for field in ("description", "niche"):
+        text = str(creator_dict.get(field, "")).lower()
+        creator_words.update(w for w in text.split() if len(w) > 2)
+    for tag in creator_dict.get("content_style", []):
+        creator_words.add(tag.lower())
+    for v in creator_dict.get("values", []):
+        creator_words.add(v.lower())
+
+    if not adv_words or not creator_words:
+        return 0.3  # neutral default
+    overlap = len(adv_words & creator_words)
+    union = len(adv_words | creator_words)
+    return overlap / union if union > 0 else 0.3
