@@ -15,6 +15,7 @@ if "user" not in st.session_state:
     st.session_state["user"] = None
 
 home = st.Page("pages/00_home.py", title="Home", icon="🏠", default=True)
+explore_page = st.Page("pages/05_explore.py", title="Explore Creators", icon="🔍")
 login_page = st.Page("pages/01_login.py", title="Login", icon="🔑")
 register_page = st.Page("pages/02_register.py", title="Register", icon="📝")
 adv_dashboard = st.Page("pages/10_advertiser_dashboard.py", title="Advertiser Dashboard", icon="📊")
@@ -33,21 +34,21 @@ user = st.session_state.get("user")
 
 if user and user.get("role") == "advertiser":
     pages = {
-        "": [home],
+        "": [home, explore_page],
         "Dashboard": [adv_dashboard, adv_profile],
         "Matching": [matches, negotiation, history],
         "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
 elif user and user.get("role") == "creator":
     pages = {
-        "": [home],
+        "": [home, explore_page],
         "Dashboard": [creator_dashboard, creator_profile],
         "Matching": [matches, negotiation, history],
         "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
 else:
     pages = {
-        "": [home],
+        "": [home, explore_page],
         "Account": [login_page, register_page],
         "Tools": [pricing_page, plans_page, admin_page, terms_page],
     }
