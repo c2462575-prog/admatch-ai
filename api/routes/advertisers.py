@@ -24,7 +24,8 @@ def _trigger_ai_background(user_id: str):
             run_embedding_generation(conn, user_id, "advertiser", mr)
         logger.info(f"AI analysis complete for advertiser {user_id}")
     except Exception as e:
-        logger.warning(f"AI analysis failed for advertiser {user_id}: {e}")
+        from core.error_tracker import track_error
+        track_error("ai_analysis_advertiser", e, {"user_id": user_id})
 
 
 @router.put("/profile", response_model=AdvertiserProfileResponse)

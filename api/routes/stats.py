@@ -85,3 +85,17 @@ def admin_analytics(conn=Depends(get_db_conn)):
             "referrals_completed": total_referrals,
         },
     }
+
+
+@router.get("/admin/errors")
+def admin_errors(limit: int = 20):
+    """Recent error log for admin debugging."""
+    from core.error_tracker import get_recent_errors
+    return get_recent_errors(limit)
+
+
+@router.get("/admin/error-summary")
+def admin_error_summary():
+    """Error summary by source."""
+    from core.error_tracker import get_error_summary
+    return get_error_summary()

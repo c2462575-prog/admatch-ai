@@ -69,3 +69,18 @@ with c5:
 st.markdown("### 🚀 Growth")
 g = data["growth"]
 st.metric("Referrals Completed", g["referrals_completed"])
+
+# Errors
+st.markdown("### 🐛 Error Tracking")
+try:
+    summary = get("/stats/admin/error-summary")
+    st.metric("Total Errors", summary.get("total_errors", 0))
+    if summary.get("by_source"):
+        st.json(summary["by_source"])
+    if summary.get("total_errors", 0) > 0:
+        with st.expander("Recent Errors"):
+            errors = get("/stats/admin/errors", {"limit": 10})
+            for err in errors:
+                st.markdown(f"**{err['time']}** `{err['source']}` — {err['error_type']}: {err['message']}")
+except Exception:
+    st.caption("No error data available")
