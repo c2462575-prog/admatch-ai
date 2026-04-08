@@ -3,12 +3,12 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import register, is_logged_in
+from frontend.utils.navigation import redirect_to_dashboard
 
 st.title("📝 註冊新帳號")
 
 if is_logged_in():
-    st.success("已登入")
-    st.switch_page("pages/00_home.py")
+    redirect_to_dashboard()
 
 with st.form("register_form"):
     display_name = st.text_input("顯示名稱")
@@ -24,9 +24,8 @@ if submitted:
         st.error("密碼至少 6 字元")
     else:
         try:
-            result = register(email, password, role, display_name)
-            st.success(f"註冊成功！歡迎 {result['user']['display_name']}")
-            st.rerun()
+            register(email, password, role, display_name)
+            redirect_to_dashboard()
         except Exception as e:
             st.error(f"註冊失敗：{e}")
 

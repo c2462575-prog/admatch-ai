@@ -3,12 +3,12 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import login, is_logged_in
+from frontend.utils.navigation import redirect_to_dashboard
 
 st.title("🔑 登入")
 
 if is_logged_in():
-    st.success("已登入")
-    st.switch_page("pages/00_home.py")
+    redirect_to_dashboard()
 
 with st.form("login_form"):
     email = st.text_input("Email")
@@ -20,9 +20,8 @@ if submitted:
         st.error("請填寫所有欄位")
     else:
         try:
-            result = login(email, password)
-            st.success(f"歡迎回來，{result['user']['display_name']}!")
-            st.rerun()
+            login(email, password)
+            redirect_to_dashboard()
         except Exception as e:
             st.error(f"登入失敗：{e}")
 
