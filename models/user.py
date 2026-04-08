@@ -8,6 +8,7 @@ class UserRegisterRequest(BaseModel):
     password: str = Field(..., min_length=6)
     role: str = Field(..., pattern="^(advertiser|creator)$")
     display_name: str = Field(..., min_length=1, max_length=100)
+    referral_code: Optional[str] = None
 
 
 class UserLoginRequest(BaseModel):

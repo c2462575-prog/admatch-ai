@@ -55,3 +55,13 @@ try:
         st.info("尚無匹配結果。請先完成品牌資料，再進行匹配。")
 except Exception:
     st.info("尚無匹配結果。請先完成品牌資料，再進行匹配。")
+
+# Referral section
+st.divider()
+st.markdown("### 🎁 邀請好友，獲得額外匹配次數")
+try:
+    ref = get("/referrals/my-code")
+    st.code(ref["code"], language=None)
+    st.caption(f"分享這個邀請碼給朋友，對方註冊時填入即可。每成功邀請 1 人，你獲得 **2 次額外匹配**。已邀請：{ref.get('total_referrals', 0)} 人")
+except Exception:
+    pass

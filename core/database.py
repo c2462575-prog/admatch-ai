@@ -98,10 +98,21 @@ CREATE TABLE IF NOT EXISTS negotiation_rounds (
     UNIQUE(negotiation_id, round_num)
 );
 
+CREATE TABLE IF NOT EXISTS referrals (
+    id TEXT PRIMARY KEY,
+    referrer_id TEXT NOT NULL REFERENCES users(id),
+    referral_code TEXT UNIQUE NOT NULL,
+    referred_user_id TEXT REFERENCES users(id),
+    bonus_granted INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    used_at TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_matches_advertiser ON matches(advertiser_id, weighted_score DESC);
 CREATE INDEX IF NOT EXISTS idx_matches_creator ON matches(creator_id, weighted_score DESC);
 CREATE INDEX IF NOT EXISTS idx_negotiations_match ON negotiations(match_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(referral_code);
 """
 
 
@@ -394,3 +405,49 @@ def update_creator_embedding(conn, user_id: str, description: str, vector: bytes
         "UPDATE creator_profiles SET embedding_description=?, embedding_vector=? WHERE user_id=?",
         (description, vector, user_id),
     )
+
+
+# ── Referral system ─────────────────────────────────────
+
+REFERRAL_BONUS_MATCHES = 2
+
+
+def create_referral_code(conn, user_id: str) -> str:
+    """Generate a unique referral code for a user. Returns existing if already has one."""
+    row = conn.execute("SELECT referral_code FROM referrals WHERE referrer_id = ? AND referred_user_id IS NULL", (user_id,)).fetchone()
+    if row:
+        return row[0]
+    import hashlib
+    code = hashlib.sha256(f"{user_id}-{_now()}".encode()).hexdigest()[:8].upper()
+    rid = new_id()
+    conn.execute("INSERT INTO referrals (id, referrer_id, referral_code) VALUES (?,?,?)", (rid, user_id, code))
+    return code
+
+
+def use_referral_code(conn, code: str, new_user_id: str) -> bool:
+    """Apply a referral code for a new user. Returns True if successful."""
+    row = conn.execute("SELECT id, referrer_id FROM referrals WHERE referral_code = ? AND referred_user_id IS NULL", (code,)).fetchone()
+    if not row:
+        return False
+    referral_id, referrer_id = row[0], row[1]
+    if referrer_id == new_user_id:
+        return False  # can't refer yourself
+    conn.execute("UPDATE referrals SET referred_user_id=?, used_at=datetime('now'), bonus_granted=1 WHERE id=?", (new_user_id, referral_id))
+    # Grant bonus matches to referrer
+    conn.execute(
+        "UPDATE users SET matches_used_this_month = MAX(0, matches_used_this_month - ?) WHERE id = ?",
+        (REFERRAL_BONUS_MATCHES, referrer_id),
+    )
+    return True
+
+
+def get_referral_stats(conn, user_id: str) -> dict:
+    """Get referral stats for a user."""
+    code_row = conn.execute("SELECT referral_code FROM referrals WHERE referrer_id = ? LIMIT 1", (user_id,)).fetchone()
+    total = conn.execute("SELECT COUNT(*) FROM referrals WHERE referrer_id = ? AND referred_user_id IS NOT NULL", (user_id,)).fetchone()[0]
+    bonus = total * REFERRAL_BONUS_MATCHES
+    return {
+        "referral_code": code_row[0] if code_row else None,
+        "total_referrals": total,
+        "bonus_matches_earned": bonus,
+    }

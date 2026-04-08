@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.post("/register", response_model=TokenResponse, status_code=201)
 def register_user(data: UserRegisterRequest, conn=Depends(get_db_conn)):
-    return register(conn, data.email, data.password, data.role, data.display_name)
+    return register(conn, data.email, data.password, data.role, data.display_name, data.referral_code)
 
 
 @router.post("/login", response_model=TokenResponse)

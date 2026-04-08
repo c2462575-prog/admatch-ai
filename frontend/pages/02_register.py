@@ -15,6 +15,7 @@ with st.form("register_form"):
     email = st.text_input("Email")
     password = st.text_input("密碼（至少 6 字元）", type="password")
     role = st.selectbox("身份", ["advertiser", "creator"], format_func=lambda x: "🏢 廣告主" if x == "advertiser" else "🎬 創作者")
+    referral_code = st.text_input("邀請碼（選填）", placeholder="朋友給你的邀請碼")
     submitted = st.form_submit_button("註冊", type="primary", use_container_width=True)
 
 if submitted:
@@ -24,7 +25,13 @@ if submitted:
         st.error("密碼至少 6 字元")
     else:
         try:
-            register(email, password, role, display_name)
+            from frontend.utils.api_client import post
+            result = post("/auth/register", {
+                "email": email, "password": password, "role": role,
+                "display_name": display_name, "referral_code": referral_code or None,
+            })
+            st.session_state["token"] = result["access_token"]
+            st.session_state["user"] = result["user"]
             redirect_to_dashboard()
         except Exception as e:
             st.error(f"註冊失敗：{e}")
