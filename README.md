@@ -1,3 +1,13 @@
+---
+title: AdMatch AI
+emoji: 🎯
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🎯 AdMatch AI
 
 **AI 驅動的網紅行銷媒合平台** — 用 AI 自動完成匹配推薦、價值評估、談判模擬、合約建議。
