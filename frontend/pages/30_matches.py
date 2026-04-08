@@ -4,6 +4,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get, post
 from frontend.utils.charts import match_radar_chart, score_bar_chart
+from frontend.utils.match_insights import generate_match_insight, get_match_verdict
 
 require_login()
 user = current_user()
@@ -41,8 +42,10 @@ for i, m in enumerate(matches):
     with st.container(border=True):
         col1, col2, col3 = st.columns([2, 3, 1])
         with col1:
-            st.markdown(f"### {m.get('partner_name', 'Partner')}")
-            st.metric("總匹配度", f"{m.get('weighted_score', 0):.1%}")
+            emoji, verdict = get_match_verdict(m.get("weighted_score", 0))
+            st.markdown(f"### {emoji} {m.get('partner_name', 'Partner')}")
+            st.metric("總匹配度", f"{m.get('weighted_score', 0):.1%}", delta=verdict)
+            st.caption(generate_match_insight(m))
         with col2:
             fig = match_radar_chart({
                 "embedding_score": m.get("embedding_score", 0),
