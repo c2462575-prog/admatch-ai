@@ -32,13 +32,49 @@ if not matches:
     st.info("尚無匹配結果。點擊「重新匹配」開始 AI 媒合。")
     st.stop()
 
+# Filters and sorting
+with st.expander("🔧 篩選與排序", expanded=False):
+    fc1, fc2, fc3 = st.columns(3)
+    with fc1:
+        sort_by = st.selectbox("排序依據", ["weighted_score", "embedding_score", "audience_score", "budget_score", "values_score"],
+                                format_func=lambda x: {"weighted_score": "總匹配度", "embedding_score": "內容相關性",
+                                                        "audience_score": "受眾契合", "budget_score": "預算吻合",
+                                                        "values_score": "價值觀一致"}.get(x, x))
+    with fc2:
+        min_score = st.slider("最低匹配度", 0.0, 1.0, 0.0, 0.05)
+    with fc3:
+        status_filter = st.selectbox("狀態", ["all", "pending", "negotiation_started"],
+                                      format_func=lambda x: {"all": "全部", "pending": "待處理", "negotiation_started": "談判中"}.get(x, x))
+
+# Apply filters
+filtered = matches
+if min_score > 0:
+    filtered = [m for m in filtered if m.get("weighted_score", 0) >= min_score]
+if status_filter != "all":
+    filtered = [m for m in filtered if m.get("status") == status_filter]
+filtered.sort(key=lambda x: x.get(sort_by, 0), reverse=True)
+
+st.caption(f"顯示 {len(filtered)} / {len(matches)} 個匹配")
+
+# Supply-side growth prompt
+if len(matches) <= 3:
+    partner_type = "創作者" if user.get("role") == "advertiser" else "廣告主"
+    with st.container(border=True):
+        st.markdown(f"💡 **想看到更多{partner_type}？** 邀請更多{partner_type}加入平台，匹配池越大，找到理想夥伴的機會越高！")
+        try:
+            ref = get("/referrals/my-code")
+            st.markdown(f"你的邀請碼：`{ref['code']}` — 每邀請 1 人可獲得 2 次額外匹配")
+        except Exception:
+            pass
+
 # Bar chart overview
-st.plotly_chart(score_bar_chart(matches), use_container_width=True)
+if filtered:
+    st.plotly_chart(score_bar_chart(filtered), use_container_width=True)
 
 st.divider()
 
 # Detailed cards
-for i, m in enumerate(matches):
+for i, m in enumerate(filtered):
     with st.container(border=True):
         col1, col2, col3 = st.columns([2, 3, 1])
         with col1:
@@ -52,7 +88,7 @@ for i, m in enumerate(matches):
                 "audience_score": m.get("audience_score", 0),
                 "budget_score": m.get("budget_score", 0),
                 "values_score": m.get("values_score", 0),
-            }, title=f"Score Breakdown")
+            }, title="Score Breakdown")
             st.plotly_chart(fig, use_container_width=True, key=f"radar_{i}")
         with col3:
             st.caption(f"狀態: {m.get('status', 'pending')}")
