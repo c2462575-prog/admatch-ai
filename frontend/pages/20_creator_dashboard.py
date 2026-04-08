@@ -3,12 +3,17 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get
+from frontend.utils.onboarding import show_creator_onboarding
 
 require_login()
 user = current_user()
 
 st.title(f"🎬 創作者儀表板")
 st.markdown(f"歡迎, **{user['display_name']}**")
+
+# Onboarding checklist for new users
+show_creator_onboarding()
+st.divider()
 
 col1, col2, col3 = st.columns(3)
 with col1:
