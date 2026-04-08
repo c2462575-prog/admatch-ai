@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from core.config import ALLOWED_ORIGINS, DATABASE_PATH, GEMINI_API_KEY
 from core.database import init_db
-from api.routes import auth, advertisers, creators, matching, negotiations, pricing, stats, referrals, explore
+from api.routes import auth, advertisers, creators, matching, negotiations, pricing, stats, referrals, explore, activity
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("admatch")
@@ -68,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
     app.include_router(referrals.router, prefix="/api/referrals", tags=["referrals"])
     app.include_router(explore.router, prefix="/api/explore", tags=["explore"])
+    app.include_router(activity.router, prefix="/api/activity", tags=["activity"])
 
     @app.get("/api/health")
     def health():

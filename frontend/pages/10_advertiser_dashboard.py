@@ -56,6 +56,19 @@ try:
 except Exception:
     st.info("尚無匹配結果。請先完成品牌資料，再進行匹配。")
 
+# Activity feed
+st.divider()
+st.markdown("### 📰 最近動態")
+try:
+    events = get("/activity/feed", {"limit": 5})
+    if events:
+        for ev in events:
+            st.markdown(f"{ev['icon']} **{ev['text']}**")
+    else:
+        st.caption("尚無動態")
+except Exception:
+    st.caption("尚無動態")
+
 # Referral section
 st.divider()
 st.markdown("### 🎁 邀請好友，獲得額外匹配次數")
