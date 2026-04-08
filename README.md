@@ -1,143 +1,119 @@
-# AdMatch AI MVP
+# 🎯 AdMatch AI
 
-Three-party AI Agent advertising matching platform using Google Gemini API.
+**AI 驅動的網紅行銷媒合平台** — 用 AI 自動完成匹配推薦、價值評估、談判模擬、合約建議。
 
-## Overview
+🌐 **Live Demo:** [https://yc79-admatch-ai.hf.space](https://yc79-admatch-ai.hf.space)
+📖 **API Docs:** [https://yc79-admatch-ai.hf.space:8000/docs](localhost:8000/docs when running locally)
 
-AdMatch AI is a proof-of-concept platform that demonstrates AI-powered matching between advertisers and content creators, with audience feedback integration. The system uses multiple Gemini models with different thinking levels for various tasks.
+---
 
-### Participants
+## Features
 
-**Advertisers (3)**
-- **BrewLab Coffee** - Specialty coffee brand targeting urban professionals
-- **CloudDesk SaaS** - Cloud collaboration platform for tech teams
-- **NatureStep Skincare** - Organic skincare brand for eco-conscious consumers
+| Feature | Description |
+|---------|-------------|
+| **AI Smart Matching** | 四維加權評分 (Embedding 40% + Audience 25% + Budget 20% + Values 15%) |
+| **3-Round Negotiation** | AI 模擬廣告主、創作者、觀眾三方談判 |
+| **Audience Scoring** | 觀眾反應評分 + 介入警告機制 |
+| **Match Insights** | 自動生成匹配解釋 + 推薦等級標籤 |
+| **Pricing Calculator** | 根據粉絲數/互動率/類別估算合理報價 + ROI |
+| **Dual-Role System** | 廣告主和創作者各有獨立儀表板 + Onboarding |
+| **Freemium Model** | Free (3 matches/mo) / Basic (¥299) / Pro (¥999) |
 
-**Creators (3)**
-- **Ken (lifestyle)** - Lifestyle blogger focusing on coffee culture and urban exploration
-- **Mia (sustainability)** - Environmental content creator focused on zero-waste living
-- **DevTalk (tech)** - Developer-focused channel with tutorials and tool reviews
-
-**Audiences (3)**
-- Each creator has a distinct audience with different acceptance thresholds
-
-## Project Structure
+## Tech Stack
 
 ```
-socialMediaMarket/
-├── main.py                 # Orchestrator - runs all 4 flows
-├── model_router.py         # Dynamic model selection + API logging
-├── agents/
-│   ├── __init__.py
-│   ├── advertiser_agent.py # PRO/HIGH for analysis
-│   ├── creator_agent.py    # PRO/HIGH for analysis
-│   └── audience_agent.py   # FLASH_LITE/LOW for scoring
-├── engine/
-│   ├── __init__.py
-│   ├── embedding.py        # Embedding generation (EMBED model)
-│   └── matching.py         # Cosine similarity + weighted matrix
-├── negotiation/
-│   ├── __init__.py
-│   └── negotiation.py      # 3-round negotiation flow
-├── report/
-│   ├── __init__.py
-│   └── generator.py        # Markdown report (PRO/MEDIUM)
-├── data/
-│   ├── __init__.py
-│   └── scenarios.py        # Hard-coded test data (Chinese)
-├── requirements.txt
-└── README.md
+Frontend:  Streamlit (11 pages)
+Backend:   FastAPI (25 API endpoints)
+Database:  SQLite with WAL mode
+AI:        Google Gemini API (with keyword fallback)
+Auth:      JWT (HMAC-SHA256) + PBKDF2 password hashing
+Deploy:    Docker → HuggingFace Spaces
+Tests:     55 passing (pytest)
 ```
 
-## Model Configuration
-
-| Task | Model | thinking_level |
-|------|-------|----------------|
-| Agent deep analysis (Flow 1) | `gemini-3.1-pro-preview` | HIGH |
-| Embedding description gen | `gemini-3-flash-preview` | MEDIUM |
-| Embedding vectorization | `gemini-embedding-2-preview` | N/A |
-| Negotiation dialogue | `gemini-3.1-pro-preview` | MEDIUM |
-| Audience scoring | `gemini-3.1-flash-lite-preview` | LOW |
-| Audience intervention | `gemini-3.1-flash-lite-preview` | LOW |
-| Report generation | `gemini-3.1-pro-preview` | MEDIUM |
-
-## Four Core Flows
-
-### Flow 1: Agent Deep Analysis
-Each agent (Advertiser/Creator) analyzes their role using PRO/HIGH and outputs structured JSON profiles with:
-- Campaign/content summary
-- Ideal partner traits
-- Negotiation priorities
-- Embedding description text
-
-### Flow 2: Embedding & Matching Matrix
-- Generate embedding descriptions with FLASH/MEDIUM
-- Vectorize with EMBED model
-- Compute 3x3 raw cosine similarity matrix
-- Apply weighted scoring (embedding: 40%, audience: 25%, budget: 20%, values: 15%)
-- Output 3x3 weighted comprehensive matrix
-- Display ASCII heatmaps
-- Select top 3 matches for negotiation
-
-### Flow 3: Negotiation Simulation
-For each top 3 match:
-- **Round 1**: Advertiser offers (PRO/MEDIUM)
-- **Round 2**: Creator responds (PRO/MEDIUM)
-- **Round 3**: Final terms (PRO/MEDIUM)
-- After each round: Audience scores (FLASH_LITE/LOW)
-- If score < threshold: Audience intervention warning
-- Outcome: SUCCESS / FAILED / AUDIENCE_REJECTED
-
-### Flow 4: Final Report
-- Generate comprehensive markdown report (PRO/MEDIUM)
-- Save to `report.md`
-- Sections: Executive Summary, Profiles, Matrices, Negotiations, Statistics
-
-## Installation
+## Quick Start
 
 ```bash
-# Install dependencies
+# Clone
+git clone https://github.com/c2462575-prog/admatch-ai.git
+cd admatch-ai
+
+# Install
 pip install -r requirements.txt
+
+# Run (init DB + seed demo data + start API + Streamlit)
+python scripts/run_dev.py
 ```
 
-## Usage
+- **API:** http://localhost:8000/docs
+- **UI:** http://localhost:8501
+
+### Demo Accounts
+
+| Role | Email | Password |
+|------|-------|----------|
+| Advertiser | brewlab@demo.admatch.ai | demo123 |
+| Advertiser | clouddesk@demo.admatch.ai | demo123 |
+| Advertiser | naturestep@demo.admatch.ai | demo123 |
+| Creator | ken@demo.admatch.ai | demo123 |
+| Creator | mia@demo.admatch.ai | demo123 |
+| Creator | devtalk@demo.admatch.ai | demo123 |
+
+## Architecture
+
+```
+frontend/          Streamlit multipage app (11 pages)
+  pages/           Home, Login, Register, Dashboards, Profiles,
+                   Matches, Negotiation, History, Pricing, Plans
+  utils/           API client, charts, onboarding, navigation, insights
+
+api/               FastAPI application
+  routes/          auth, advertisers, creators, matching,
+                   negotiations, pricing, stats
+
+services/          Business logic layer
+  auth_service     Register/login with JWT
+  profile_service  Wraps AI agents for profile analysis
+  matching_service Embedding + keyword fallback matching
+  negotiation_service  Per-round AI negotiation
+
+core/              Infrastructure
+  config           Environment-based configuration
+  database         SQLite schema (6 tables) + CRUD
+  security         JWT + password hashing
+  dependencies     FastAPI dependency injection
+
+agents/            AI Agents (Google Gemini)
+  advertiser_agent Campaign analysis + offer generation
+  creator_agent    Content analysis + response generation
+  audience_agent   Audience scoring + intervention
+
+engine/            Matching algorithms
+  embedding        Gemini embedding generation
+  matching         Cosine similarity + weighted scoring
+```
+
+## Environment Variables
 
 ```bash
-# Set API key (Windows)
-set GEMINI_API_KEY=your_api_key_here
-
-# Set API key (Linux/Mac)
-export GEMINI_API_KEY=your_api_key_here
-
-# Run the MVP
-python main.py
+GEMINI_API_KEY=your_key        # Required for AI features
+JWT_SECRET=random_string       # Auto-generated if not set
+DATABASE_PATH=data/app.db      # SQLite database path
+FREE_MATCHES_PER_MONTH=3       # Freemium limit
 ```
 
-## Expected Outcomes
+## Docker
 
-Based on scenario design:
-- **CloudDesk + DevTalk**: High match (tech), tolerant audience → SUCCESS
-- **NatureStep + Mia**: High match but strict audience (0.45 threshold) → AUDIENCE_REJECTED
-- **BrewLab + Ken**: Moderate match → Variable outcome
+```bash
+docker-compose up
+```
 
-## Error Handling
+## Tests
 
-- Exponential backoff retry (max 3 attempts): 1s → 2s → 4s
-- Graceful degradation: If one agent fails, continue with others
-- All API calls logged with model name + thinking_level
-
-## Technical Notes
-
-- Uses `google-genai` SDK (NOT deprecated `google-generativeai`)
-- ThinkingConfig format: `types.ThinkingConfig(thinking_level="HIGH/MEDIUM/LOW")`
-- Never sets temperature parameter
-- Never uses thinking_budget with thinking_level
-
-## Output Files
-
-- `report.md` - Comprehensive matching and negotiation report
-- Console output - Real-time progress and ASCII heatmaps
+```bash
+python -m pytest tests/ -v     # 55 tests
+```
 
 ## License
 
-MIT License
+MIT
