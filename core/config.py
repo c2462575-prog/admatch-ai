@@ -1,6 +1,10 @@
 """Application configuration via environment variables."""
 import os
+import secrets
+import logging
 from pathlib import Path
+
+logger = logging.getLogger("admatch.config")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -9,8 +13,13 @@ DATA_DIR = BASE_DIR / "data"
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'app.db'}")
 DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "data" / "app.db"))
 
-# Auth
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
+# Auth — auto-generate secret if not set, never use a hardcoded default
+_jwt_from_env = os.getenv("JWT_SECRET", "")
+if _jwt_from_env and _jwt_from_env != "dev-secret-change-in-production":
+    JWT_SECRET = _jwt_from_env
+else:
+    JWT_SECRET = secrets.token_hex(32)
+    logger.warning("JWT_SECRET not set — generated ephemeral secret. Sessions will not survive restarts. Set JWT_SECRET env var for production.")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))  # 24 hours
 

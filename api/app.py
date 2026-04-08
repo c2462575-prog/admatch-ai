@@ -3,7 +3,7 @@ import time
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from core.config import ALLOWED_ORIGINS, DATABASE_PATH
+from core.config import ALLOWED_ORIGINS, DATABASE_PATH, GEMINI_API_KEY
 from core.database import init_db
 from api.routes import auth, advertisers, creators, matching, negotiations, pricing, stats
 
@@ -13,6 +13,10 @@ logger = logging.getLogger("admatch")
 
 def create_app() -> FastAPI:
     init_db()
+    if not GEMINI_API_KEY:
+        logger.warning("GEMINI_API_KEY not set — AI matching and negotiation will use fallback mode.")
+    else:
+        logger.info("GEMINI_API_KEY configured — full AI features enabled.")
 
     app = FastAPI(
         title="AdMatch AI",
