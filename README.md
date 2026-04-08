@@ -3,7 +3,6 @@
 **AI 驅動的網紅行銷媒合平台** — 用 AI 自動完成匹配推薦、價值評估、談判模擬、合約建議。
 
 🌐 **Live Demo:** [https://yc79-admatch-ai.hf.space](https://yc79-admatch-ai.hf.space)
-📖 **API Docs:** [https://yc79-admatch-ai.hf.space:8000/docs](localhost:8000/docs when running locally)
 
 ---
 
@@ -11,37 +10,40 @@
 
 | Feature | Description |
 |---------|-------------|
-| **AI Smart Matching** | 四維加權評分 (Embedding 40% + Audience 25% + Budget 20% + Values 15%) |
+| **AI Smart Matching** | 四維加權評分 (Embedding 40% + Audience 25% + Budget 20% + Values 15%) + 無 API 時 keyword fallback |
 | **3-Round Negotiation** | AI 模擬廣告主、創作者、觀眾三方談判 |
 | **Audience Scoring** | 觀眾反應評分 + 介入警告機制 |
-| **Match Insights** | 自動生成匹配解釋 + 推薦等級標籤 |
+| **Match Insights** | 自動生成中文匹配解釋 + 推薦等級標籤 (🟢🟡🟠🔴) |
+| **Public Creator Explore** | 未登入即可瀏覽創作者，驅動 top-of-funnel 獲客 |
 | **Pricing Calculator** | 根據粉絲數/互動率/類別估算合理報價 + ROI |
-| **Dual-Role System** | 廣告主和創作者各有獨立儀表板 + Onboarding |
-| **Freemium Model** | Free (3 matches/mo) / Basic (¥299) / Pro (¥999) |
+| **Dual-Role Dashboards** | 廣告主/創作者獨立儀表板 + Onboarding checklist |
+| **Activity Feed** | 匹配/談判/新用戶動態時間線，促進留存 |
+| **Referral System** | 邀請碼 + 每邀 1 人 +2 次匹配，病毒式增長 |
+| **Freemium Plans** | Free / Basic (¥299) / Pro (¥999) 三種方案 |
+| **Profile Completeness** | 視覺化完成度指標，Zeigarnik effect 驅動填寫 |
+| **Admin Dashboard** | 用戶/匹配/談判/增長/錯誤全面分析 |
+| **Error Tracking** | Ring buffer 錯誤追蹤 + admin 可視化 |
+| **Security** | JWT auto-secret + PBKDF2 + rate limiting (60 req/min/IP) |
+| **Legal** | 使用條款 + 隱私政策（中文） |
 
 ## Tech Stack
 
 ```
-Frontend:  Streamlit (11 pages)
-Backend:   FastAPI (25 API endpoints)
-Database:  SQLite with WAL mode
+Frontend:  Streamlit (15 pages)
+Backend:   FastAPI (30+ API endpoints)
+Database:  SQLite with WAL mode (7 tables)
 AI:        Google Gemini API (with keyword fallback)
 Auth:      JWT (HMAC-SHA256) + PBKDF2 password hashing
 Deploy:    Docker → HuggingFace Spaces
-Tests:     55 passing (pytest)
+Tests:     62 passing (pytest)
 ```
 
 ## Quick Start
 
 ```bash
-# Clone
 git clone https://github.com/c2462575-prog/admatch-ai.git
 cd admatch-ai
-
-# Install
 pip install -r requirements.txt
-
-# Run (init DB + seed demo data + start API + Streamlit)
 python scripts/run_dev.py
 ```
 
@@ -54,43 +56,34 @@ python scripts/run_dev.py
 |------|-------|----------|
 | Advertiser | brewlab@demo.admatch.ai | demo123 |
 | Advertiser | clouddesk@demo.admatch.ai | demo123 |
-| Advertiser | naturestep@demo.admatch.ai | demo123 |
 | Creator | ken@demo.admatch.ai | demo123 |
 | Creator | mia@demo.admatch.ai | demo123 |
-| Creator | devtalk@demo.admatch.ai | demo123 |
 
 ## Architecture
 
 ```
-frontend/          Streamlit multipage app (11 pages)
-  pages/           Home, Login, Register, Dashboards, Profiles,
-                   Matches, Negotiation, History, Pricing, Plans
-  utils/           API client, charts, onboarding, navigation, insights
+frontend/          Streamlit multipage app (15 pages)
+  pages/           Home, Explore, Login, Register, Dashboards, Profiles,
+                   Matches, Negotiation, History, Pricing, Plans, Admin, Terms
+  utils/           API client, charts, onboarding, navigation, insights,
+                   profile completeness
 
 api/               FastAPI application
-  routes/          auth, advertisers, creators, matching,
-                   negotiations, pricing, stats
+  routes/          auth, advertisers, creators, matching, negotiations,
+                   pricing, stats, referrals, explore, activity
 
 services/          Business logic layer
-  auth_service     Register/login with JWT
-  profile_service  Wraps AI agents for profile analysis
+  auth_service     Register/login with JWT + referral codes
+  profile_service  AI agent analysis + embedding generation
   matching_service Embedding + keyword fallback matching
   negotiation_service  Per-round AI negotiation
 
 core/              Infrastructure
-  config           Environment-based configuration
-  database         SQLite schema (6 tables) + CRUD
+  config           Environment-based config + security validation
+  database         SQLite schema (7 tables) + CRUD
   security         JWT + password hashing
   dependencies     FastAPI dependency injection
-
-agents/            AI Agents (Google Gemini)
-  advertiser_agent Campaign analysis + offer generation
-  creator_agent    Content analysis + response generation
-  audience_agent   Audience scoring + intervention
-
-engine/            Matching algorithms
-  embedding        Gemini embedding generation
-  matching         Cosine similarity + weighted scoring
+  error_tracker    In-memory error ring buffer
 ```
 
 ## Environment Variables
@@ -102,17 +95,35 @@ DATABASE_PATH=data/app.db      # SQLite database path
 FREE_MATCHES_PER_MONTH=3       # Freemium limit
 ```
 
-## Docker
-
-```bash
-docker-compose up
-```
-
 ## Tests
 
 ```bash
-python -m pytest tests/ -v     # 55 tests
+python -m pytest tests/ -v     # 62 tests
 ```
+
+## Development History
+
+20 iterations of VC-driven improvement:
+1. Platform stats social proof
+2. Keyword matching fallback
+3. Onboarding checklist
+4. Pricing plans page
+5. Health check + logging
+6. Auth redirect flow
+7. Match insights + verdicts
+8. JWT security hardening
+9. Security + matching tests
+10. Production README
+11. Referral system
+12. Admin analytics dashboard
+13. Profile completeness bar
+14. Terms + privacy + rate limiting
+15. AI pipeline wired up
+16. Match filtering + growth prompt
+17. Public creator explore
+18. Activity feed
+19. Error tracking system
+20. Final sync + README update
 
 ## License
 
