@@ -11,6 +11,24 @@ st.markdown("""
 用 AI 自動完成：**匹配推薦** → **價值評估** → **談判模擬** → **合約建議**
 """)
 
+# Platform stats - social proof
+try:
+    from frontend.utils.api_client import get
+    stats = get("/stats/platform")
+    s1, s2, s3, s4 = st.columns(4)
+    with s1:
+        st.metric("廣告主", stats.get("total_advertisers", 0))
+    with s2:
+        st.metric("創作者", stats.get("total_creators", 0))
+    with s3:
+        st.metric("匹配次數", stats.get("total_matches", 0))
+    with s4:
+        st.metric("成功合作", stats.get("successful_negotiations", 0))
+except Exception:
+    pass
+
+st.divider()
+
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("### 🔍 智能匹配")

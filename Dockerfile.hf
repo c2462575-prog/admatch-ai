@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy source
+COPY . .
+
+# Init DB + Seed
+RUN python scripts/init_db.py && python scripts/seed_db.py
+
+# HF Spaces exposes port 7860
+ENV PORT=7860
+ENV API_BASE_URL=http://localhost:8000/api
+ENV DATABASE_PATH=/app/data/app.db
+
+EXPOSE 7860
+
+# Start API in background + Streamlit on port 7860
+CMD python -c "import hf_app" & sleep 3 && streamlit run hf_streamlit_app.py \
+    --server.port=7860 \
+    --server.address=0.0.0.0 \
+    --server.headless=true \
+    --browser.gatherUsageStats=false \
+    --server.enableCORS=false \
+    --server.enableXsrfProtection=false

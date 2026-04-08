@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import ALLOWED_ORIGINS
 from core.database import init_db
-from api.routes import auth, advertisers, creators, matching, negotiations, pricing
+from api.routes import auth, advertisers, creators, matching, negotiations, pricing, stats
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(matching.router, prefix="/api/matching", tags=["matching"])
     app.include_router(negotiations.router, prefix="/api/negotiations", tags=["negotiations"])
     app.include_router(pricing.router, prefix="/api/pricing", tags=["pricing"])
+    app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 
     @app.get("/api/health")
     def health():
