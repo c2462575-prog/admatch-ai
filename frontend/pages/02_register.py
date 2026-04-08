@@ -1,0 +1,36 @@
+"""Register page."""
+import streamlit as st
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+from frontend.utils.api_client import register, is_logged_in
+
+st.title("📝 註冊新帳號")
+
+if is_logged_in():
+    st.success("已登入")
+    st.switch_page("pages/00_home.py")
+
+with st.form("register_form"):
+    display_name = st.text_input("顯示名稱")
+    email = st.text_input("Email")
+    password = st.text_input("密碼（至少 6 字元）", type="password")
+    role = st.selectbox("身份", ["advertiser", "creator"], format_func=lambda x: "🏢 廣告主" if x == "advertiser" else "🎬 創作者")
+    submitted = st.form_submit_button("註冊", type="primary", use_container_width=True)
+
+if submitted:
+    if not all([display_name, email, password]):
+        st.error("請填寫所有欄位")
+    elif len(password) < 6:
+        st.error("密碼至少 6 字元")
+    else:
+        try:
+            result = register(email, password, role, display_name)
+            st.success(f"註冊成功！歡迎 {result['user']['display_name']}")
+            st.rerun()
+        except Exception as e:
+            st.error(f"註冊失敗：{e}")
+
+st.markdown("---")
+st.markdown("已有帳號？")
+if st.button("前往登入"):
+    st.switch_page("pages/01_login.py")

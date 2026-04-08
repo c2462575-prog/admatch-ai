@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+*.env.local
+
+# Database
+data/app.db
+data/*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Streamlit
+.streamlit/
+
+# Claude
+.claude/
+
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
