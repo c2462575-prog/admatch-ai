@@ -298,13 +298,18 @@ def create_match(conn, advertiser_id: str, creator_id: str, scores: dict) -> dic
 
 
 def get_matches_for_user(conn, user_id: str, role: str, limit: int = 20) -> list[dict]:
-    col = "advertiser_id" if role == "advertiser" else "creator_id"
-    partner_col = "creator_id" if role == "advertiser" else "advertiser_id"
-    rows = conn.execute(f"""
-        SELECT m.*, u.display_name as partner_name
-        FROM matches m JOIN users u ON m.{partner_col} = u.id
-        WHERE m.{col} = ? ORDER BY m.weighted_score DESC LIMIT ?
-    """, (user_id, limit)).fetchall()
+    if role == "advertiser":
+        rows = conn.execute("""
+            SELECT m.*, u.display_name as partner_name
+            FROM matches m JOIN users u ON m.creator_id = u.id
+            WHERE m.advertiser_id = ? ORDER BY m.weighted_score DESC LIMIT ?
+        """, (user_id, limit)).fetchall()
+    else:
+        rows = conn.execute("""
+            SELECT m.*, u.display_name as partner_name
+            FROM matches m JOIN users u ON m.advertiser_id = u.id
+            WHERE m.creator_id = ? ORDER BY m.weighted_score DESC LIMIT ?
+        """, (user_id, limit)).fetchall()
     return [dict(r) for r in rows]
 
 
