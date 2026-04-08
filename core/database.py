@@ -294,7 +294,7 @@ def create_match(conn, advertiser_id: str, creator_id: str, scores: dict) -> dic
           scores.get("embedding_score", 0), scores.get("audience_score", 0),
           scores.get("budget_score", 0), scores.get("values_score", 0),
           scores.get("weighted_score", 0)))
-    return {"id": mid, **scores}
+    return {"id": mid, "advertiser_id": advertiser_id, "creator_id": creator_id, **scores}
 
 
 def get_matches_for_user(conn, user_id: str, role: str, limit: int = 20) -> list[dict]:
