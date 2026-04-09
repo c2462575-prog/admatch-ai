@@ -5,13 +5,15 @@ import hf_app  # This initializes DB + starts API in background thread
 
 # Now import and run the actual Streamlit app
 import streamlit as st
+from frontend.utils.mobile_style import inject_mobile_css
 
 st.set_page_config(
     page_title="AdMatch AI",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
+inject_mobile_css()
 
 if "token" not in st.session_state:
     st.session_state["token"] = None

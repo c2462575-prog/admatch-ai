@@ -1,12 +1,16 @@
 """AdMatch AI - Streamlit multipage app entry point."""
 import streamlit as st
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from frontend.utils.mobile_style import inject_mobile_css
 
 st.set_page_config(
     page_title="AdMatch AI",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
+inject_mobile_css()
 
 # Initialize session state
 if "token" not in st.session_state:

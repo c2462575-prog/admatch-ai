@@ -35,22 +35,20 @@ st.caption(f"共 {len(creators)} 位創作者")
 
 for i, c in enumerate(creators):
     with st.container(border=True):
-        col1, col2, col3 = st.columns([2, 3, 1])
-        with col1:
-            st.markdown(f"### {c['display_name']}")
-            st.caption(f"📌 {c['niche']}")
-        with col2:
-            st.markdown(c.get("description", ""))
-            tags = c.get("content_style", []) + c.get("values", [])
-            if tags:
-                st.markdown(" ".join(f"`{t}`" for t in tags[:6]))
-        with col3:
+        # Header: name + stats
+        hc1, hc2 = st.columns([3, 2])
+        with hc1:
+            st.markdown(f"**{c['display_name']}** · 📌 {c['niche']}")
+        with hc2:
             fc = c.get("follower_count", 0)
-            if fc >= 10000:
-                st.metric("粉絲", f"{fc/10000:.1f}萬")
-            else:
-                st.metric("粉絲", f"{fc:,}")
-            st.caption(f"互動率 {c.get('engagement_rate', 0):.1%}")
+            fc_str = f"{fc/10000:.1f}萬" if fc >= 10000 else f"{fc:,}"
+            st.markdown(f"👥 {fc_str} · 💬 {c.get('engagement_rate', 0):.1%}")
+        # Description
+        st.caption(c.get("description", ""))
+        # Tags
+        tags = c.get("content_style", []) + c.get("values", [])
+        if tags:
+            st.markdown(" ".join(f"`{t}`" for t in tags[:6]))
 
 if not is_logged_in():
     st.divider()

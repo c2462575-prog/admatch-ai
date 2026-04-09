@@ -73,26 +73,28 @@ if filtered:
 
 st.divider()
 
-# Detailed cards
+# Detailed cards — mobile-friendly stacked layout
 for i, m in enumerate(filtered):
     with st.container(border=True):
-        col1, col2, col3 = st.columns([2, 3, 1])
-        with col1:
-            emoji, verdict = get_match_verdict(m.get("weighted_score", 0))
+        emoji, verdict = get_match_verdict(m.get("weighted_score", 0))
+        # Header row: name + score
+        hc1, hc2 = st.columns([3, 2])
+        with hc1:
             st.markdown(f"### {emoji} {m.get('partner_name', 'Partner')}")
-            st.metric("總匹配度", f"{m.get('weighted_score', 0):.1%}", delta=verdict)
-            st.caption(generate_match_insight(m))
-        with col2:
-            fig = match_radar_chart({
-                "embedding_score": m.get("embedding_score", 0),
-                "audience_score": m.get("audience_score", 0),
-                "budget_score": m.get("budget_score", 0),
-                "values_score": m.get("values_score", 0),
-            }, title="Score Breakdown")
-            st.plotly_chart(fig, use_container_width=True, key=f"radar_{i}")
-        with col3:
-            st.caption(f"狀態: {m.get('status', 'pending')}")
-            match_id = m.get("id", "")
-            if st.button("💬 開始談判", key=f"neg_{i}"):
-                st.session_state["negotiate_match_id"] = match_id
-                st.switch_page("pages/31_negotiation.py")
+        with hc2:
+            st.metric("匹配度", f"{m.get('weighted_score', 0):.1%}", delta=verdict)
+
+        # Insight text
+        st.caption(generate_match_insight(m))
+
+        # Score bars (compact, mobile-friendly)
+        scores = {"內容": m.get("embedding_score", 0), "受眾": m.get("audience_score", 0),
+                  "預算": m.get("budget_score", 0), "價值觀": m.get("values_score", 0)}
+        for label, val in scores.items():
+            st.progress(min(val, 1.0), text=f"{label} {val:.0%}")
+
+        # Action button
+        match_id = m.get("id", "")
+        if st.button("💬 開始談判", key=f"neg_{i}", use_container_width=True):
+            st.session_state["negotiate_match_id"] = match_id
+            st.switch_page("pages/31_negotiation.py")
