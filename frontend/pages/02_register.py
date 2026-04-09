@@ -39,4 +39,4 @@ if submitted:
 st.markdown("---")
 st.markdown("已有帳號？")
 if st.button("前往登入"):
-    st.switch_page("pages/01_login.py")
+    switch("01_login.py")

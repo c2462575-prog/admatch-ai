@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import is_logged_in, current_user, logout
+from frontend.utils.navigation import switch
 
 st.title("🎯 AdMatch AI")
 st.subheader("AI 驅動的網紅行銷媒合平台")
@@ -42,18 +43,18 @@ if is_logged_in():
     user = current_user()
     st.success(f"已登入：{user['display_name']} ({user['role']})")
     if user["role"] == "advertiser":
-        st.button("前往儀表板", type="primary", use_container_width=True, on_click=lambda: st.switch_page("pages/10_advertiser_dashboard.py"))
+        st.button("前往儀表板", type="primary", use_container_width=True, on_click=lambda: switch("10_advertiser_dashboard.py"))
     else:
-        st.button("前往儀表板", type="primary", use_container_width=True, on_click=lambda: st.switch_page("pages/20_creator_dashboard.py"))
+        st.button("前往儀表板", type="primary", use_container_width=True, on_click=lambda: switch("20_creator_dashboard.py"))
     if st.button("登出", use_container_width=True):
         logout()
         st.rerun()
 else:
     st.info("立即註冊，開始 AI 媒合之旅")
     if st.button("🏢 我是廣告主", type="primary", use_container_width=True):
-        st.switch_page("pages/02_register.py")
+        switch("02_register.py")
     if st.button("🎬 我是創作者", use_container_width=True):
-        st.switch_page("pages/02_register.py")
+        switch("02_register.py")
 
 st.divider()
 with st.expander("💡 運作流程", expanded=False):

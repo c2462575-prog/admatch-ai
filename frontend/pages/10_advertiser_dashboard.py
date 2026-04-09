@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get
+from frontend.utils.navigation import switch
 from frontend.utils.onboarding import show_advertiser_onboarding
 
 require_login()
@@ -32,10 +33,10 @@ st.divider()
 col1, col2 = st.columns(2)
 with col1:
     if st.button("📝 編輯品牌資料", type="primary", use_container_width=True):
-        st.switch_page("pages/11_advertiser_profile.py")
+        switch("11_advertiser_profile.py")
 with col2:
     if st.button("🔍 開始匹配", use_container_width=True):
-        st.switch_page("pages/30_matches.py")
+        switch("30_matches.py")
 
 st.divider()
 st.markdown("### 最近的匹配")

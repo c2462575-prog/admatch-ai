@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get
+from frontend.utils.navigation import switch
 
 require_login()
 user = current_user()
@@ -37,4 +38,4 @@ for neg in negotiations:
         with col4:
             if st.button("查看", key=f"view_{neg['id']}"):
                 st.session_state["active_negotiation_id"] = neg["id"]
-                st.switch_page("pages/31_negotiation.py")
+                switch("31_negotiation.py")

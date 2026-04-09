@@ -28,4 +28,4 @@ if submitted:
 st.markdown("---")
 st.markdown("還沒有帳號？")
 if st.button("前往註冊"):
-    st.switch_page("pages/02_register.py")
+    switch("02_register.py")

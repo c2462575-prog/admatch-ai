@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import get, is_logged_in
+from frontend.utils.navigation import switch
 
 st.title("🔍 探索創作者")
 st.markdown("瀏覽平台上的創作者，找到你的理想合作夥伴。")
@@ -57,7 +58,7 @@ if not is_logged_in():
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🏢 註冊為廣告主", type="primary", use_container_width=True):
-            st.switch_page("pages/02_register.py")
+            switch("02_register.py")
     with col2:
         if st.button("🔑 登入", use_container_width=True):
-            st.switch_page("pages/01_login.py")
+            switch("01_login.py")

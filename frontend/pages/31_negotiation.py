@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get, post
+from frontend.utils.navigation import switch
 from frontend.utils.charts import audience_gauge
 
 require_login()
@@ -43,7 +44,7 @@ if not neg_id:
         pass
     st.info("或從匹配結果頁面選擇一個配對來開始新談判。")
     if st.button("前往匹配結果"):
-        st.switch_page("pages/30_matches.py")
+        switch("30_matches.py")
     st.stop()
 
 # Load negotiation data
@@ -107,8 +108,8 @@ if neg["status"] != "in_progress":
     with col1:
         if st.button("返回匹配結果"):
             st.session_state.pop("active_negotiation_id", None)
-            st.switch_page("pages/30_matches.py")
+            switch("30_matches.py")
     with col2:
         if st.button("查看歷史記錄"):
             st.session_state.pop("active_negotiation_id", None)
-            st.switch_page("pages/32_history.py")
+            switch("32_history.py")

@@ -3,6 +3,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 from frontend.utils.api_client import require_login, current_user, get, post
+from frontend.utils.navigation import switch
 from frontend.utils.charts import match_radar_chart, score_bar_chart
 from frontend.utils.match_insights import generate_match_insight, get_match_verdict
 
@@ -97,4 +98,4 @@ for i, m in enumerate(filtered):
         match_id = m.get("id", "")
         if st.button("💬 開始談判", key=f"neg_{i}", use_container_width=True):
             st.session_state["negotiate_match_id"] = match_id
-            st.switch_page("pages/31_negotiation.py")
+            switch("31_negotiation.py")
